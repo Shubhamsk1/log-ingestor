@@ -50,6 +50,7 @@ object LogInput {
       "level" -> o.level,
       "message" -> o.message,
       "timestamp" -> o.timestamp.toString,
+      "resource_id"->o.resource_id,
       "trace_id" -> o.trace_id,
       "span_id" -> o.span_id,
       "commit" -> o.commit,

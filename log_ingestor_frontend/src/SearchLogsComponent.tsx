@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 interface Log {
   level: string;
   message: string;
-  resourceId: string;
+  resource_id: string;
   timestamp: string;
   trace_id: string;
   span_id: string;
@@ -48,7 +48,7 @@ const SearchLogsComponent: React.FC = () => {
       <div key={index} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px' }}>
         <strong>Level:</strong> {log.level}<br />
         <strong>Message:</strong> {log.message}<br />
-        <strong>Resource ID:</strong> {log.resourceId}<br />
+        <strong>Resource ID:</strong> {log.resource_id}<br />
         <strong>Timestamp:</strong> {log.timestamp}<br />
         <strong>Trace ID:</strong> {log.trace_id}<br />
         <strong>Span ID:</strong> {log.span_id}<br />

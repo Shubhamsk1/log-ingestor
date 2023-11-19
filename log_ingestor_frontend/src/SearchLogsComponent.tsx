@@ -60,7 +60,7 @@ const SearchLogsComponent: React.FC = () => {
 
   const handleSearch = async () => {
     try {
-      const response = await axios.post('http://localhost:9000/api/filter', searchParam);
+      const response = await axios.post('http://localhost:3000/api/filter', searchParam);
       setApiResponse(response.data)
       console.log(response.data); // Handle the response as needed
     } catch (error) {

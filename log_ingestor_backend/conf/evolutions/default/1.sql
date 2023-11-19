@@ -1,14 +1,15 @@
 # --- !Ups
 
 CREATE TABLE logs (
-  level VARCHAR(255),
-  message VARCHAR(255),
-  resource_id VARCHAR(255),
-  timestamp VARCHAR(255),
-  trace_id VARCHAR(255),
-  span_id VARCHAR(255),
-  commit VARCHAR(255),
-  parent_resource_id VARCHAR(255)
+
+  level TEXT,
+  message TEXT,
+  resource_id TEXT,
+  timestamp timestamptz,
+  trace_id TEXT,
+  span_id TEXT,
+  commit TEXT,
+  parent_resource_id TEXT
 );
 
 # --- !Downs

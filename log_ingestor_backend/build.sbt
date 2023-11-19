@@ -14,7 +14,6 @@ libraryDependencies ++=Seq("org.scalikejdbc" %% "scalikejdbc" % "3.5.0",
   "org.scalikejdbc" %% "scalikejdbc-joda-time" % "3.5.0",
   "org.scalikejdbc" %% "scalikejdbc-play-initializer" % "2.8.0-scalikejdbc-3.5",
   "org.postgresql" % "postgresql" % "42.3.6",
-
 )
 libraryDependencies ++= Seq(evolutions,jdbc)
 

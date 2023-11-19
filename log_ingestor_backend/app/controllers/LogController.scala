@@ -41,8 +41,8 @@ class LogController @Inject()(val controllerComponents: ControllerComponents,log
 //    Future.successful(Ok(Json.toJson(results)))
 //  }
 
-  def searchLogs() = Action.async(parse.json) {request =>
-    request.body.validate[]
-
-  }
+//  def searchLogs() = Action.async(parse.json) {request =>
+//    request.body.validate[]
+//
+//  }
 }

@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: logs_ingestor_db
+      POSTGRES_USER: shubhamkudekar
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shubhamkudekar -d logs_ingestor_db -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./log_ingestor_backend
+    ports:
+      - "3000:3000"
+    environment:
+      DB_URL: "jdbc:postgresql://postgres:5432/logs_ingestor_db"
+      DB_USERNAME: "shubhamkudekar"
+      DB_PASSWORD: "devpassword"
+      DB_DRIVER: "org.postgresql.Driver"
+      CORS_ORIGINS: '["http://localhost:3001", "http://localhost"]'
+      JAVA_OPTS: "-Ddb.default.url=jdbc:postgresql://postgres:5432/logs_ingestor_db -Ddb.default.username=shubhamkudekar -Ddb.default.password=devpassword -Dplay.evolutions.autoApply=true -Dplay.http.secret.key=dev_secret_change_in_production_0123456789abcdef0123456789abcdef"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./log_ingestor_frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

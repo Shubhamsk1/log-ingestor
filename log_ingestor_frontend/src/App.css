@@ -1,38 +1,492 @@
-.App {
-  text-align: center;
-}
+/* ============================================
+   Log Ingestor – Styles
+   ============================================ */
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+/* ---- Layout ---- */
+.app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* ---- Header ---- */
+.app-header {
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  font-size: 24px;
+  color: #58a6ff;
+}
+
+.brand h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0f6fc;
+  letter-spacing: -0.3px;
+}
+
+/* ---- Tab Navigation ---- */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.tab-btn:hover {
+  background: #1c2128;
+  color: #e1e4e8;
+}
+
+.tab-btn.active {
+  background: #1f2937;
+  color: #f0f6fc;
+}
+
+.tab-icon {
+  font-size: 14px;
+}
+
+/* ---- Main Content ---- */
+.app-main {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px;
+  flex: 1;
+}
+
+/* ---- Section Titles ---- */
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f0f6fc;
+  margin-bottom: 4px;
+}
+
+.section-desc {
+  color: #8b949e;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+/* ---- Search Controls ---- */
+.search-controls {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.query-selector, .filter-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+}
+
+.query-selector label, .filter-input label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---- Form Elements ---- */
+input, select, textarea {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #e1e4e8;
+  font-size: 14px;
+  transition: border-color 0.15s ease;
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.15);
+}
+
+input::placeholder, textarea::placeholder {
+  color: #484f58;
+}
+
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b949e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.datepicker-input {
+  width: 100%;
+}
+
+/* react-datepicker overrides for dark theme */
+.react-datepicker-popper .react-datepicker {
+  background: #161b22;
+  border-color: #30363d;
+  color: #e1e4e8;
+}
+.react-datepicker__header {
+  background: #1c2128;
+  border-bottom-color: #30363d;
+}
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: #e1e4e8;
+}
+.react-datepicker__day {
+  color: #c9d1d9;
+}
+.react-datepicker__day:hover {
+  background: #1f2937;
+}
+.react-datepicker__day--selected {
+  background: #58a6ff !important;
+}
+.react-datepicker__day--keyboard-selected {
+  background: #1f2937;
+}
+.react-datepicker__time-container {
+  border-left-color: #30363d;
+}
+.react-datepicker__time-container .react-datepicker__time {
+  background: #161b22;
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item {
+  color: #c9d1d9;
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+  background: #1f2937;
+}
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+  background: #58a6ff !important;
+}
+.react-datepicker__triangle {
+  display: none;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #238636;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2ea043;
+}
+
+/* ---- Messages ---- */
+.msg {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.msg-success {
+  background: #0d2817;
+  border: 1px solid #238636;
+  color: #7ee787;
+}
+
+.msg-error {
+  background: #2d1215;
+  border: 1px solid #da3633;
+  color: #ffa198;
+}
+
+/* ---- Loading ---- */
+.loading-indicator {
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 12px;
+  padding: 40px;
+  color: #8b949e;
+  font-size: 15px;
 }
 
-.App-link {
-  color: #61dafb;
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #30363d;
+  border-top-color: #58a6ff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.spinner.large {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #8b949e;
+  font-size: 15px;
+}
+
+/* ---- Results Header ---- */
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #8b949e;
+  font-weight: 500;
+}
+
+/* ---- Log Cards ---- */
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.log-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.log-card:hover {
+  border-color: #484f58;
+}
+
+.log-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #1c2128;
+  border-bottom: 1px solid #30363d;
+}
+
+.log-level {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.log-timestamp {
+  font-size: 12px;
+  color: #8b949e;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+}
+
+.log-resource {
+  margin-left: auto;
+  font-size: 12px;
+  color: #58a6ff;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+}
+
+.log-card-body {
+  padding: 14px 16px;
+}
+
+.log-message {
+  font-size: 14px;
+  color: #e1e4e8;
+  margin-bottom: 12px;
+  word-break: break-word;
+}
+
+.log-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meta-value {
+  font-size: 12px;
+  color: #c9d1d9;
+  font-family: 'SF Mono', 'Fira Code', Menlo, monospace;
+}
+
+/* ---- Ingest Form ---- */
+.ingest-container {
+  max-width: 700px;
+}
+
+.ingest-form {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .app-main {
+    padding: 20px 16px;
+  }
+
+  .search-controls {
+    flex-direction: column;
+  }
+
+  .query-selector, .filter-input {
+    min-width: 100%;
+  }
+
+  .filter-row {
+    flex-direction: column;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .tab-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .brand h1 {
+    font-size: 17px;
   }
 }

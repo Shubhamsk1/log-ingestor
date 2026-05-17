@@ -8,7 +8,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 scalaVersion := "2.13.10"
 libraryDependencies += guice
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.0" % Test
-libraryDependencies ++=Seq("org.scalikejdbc" %% "scalikejdbc" % "3.5.0",
+libraryDependencies ++= Seq(
   "org.scalikejdbc" %% "scalikejdbc" % "3.5.0",
   "org.scalikejdbc" %% "scalikejdbc-config" % "3.5.0",
   "org.scalikejdbc" %% "scalikejdbc-joda-time" % "3.5.0",
@@ -16,11 +16,13 @@ libraryDependencies ++=Seq("org.scalikejdbc" %% "scalikejdbc" % "3.5.0",
   "org.postgresql" % "postgresql" % "42.3.6",
   "com.typesafe.play" %% "play-json" % "2.10.0-RC7",
   "com.typesafe.play" %% "play-json-joda" % "2.10.0-RC7",
-  "ai.x" %% "play-json-extensions" % "0.40.2",
-
-
+  "ai.x" %% "play-json-extensions" % "0.40.2"
 )
-libraryDependencies ++= Seq(evolutions,jdbc)
+libraryDependencies ++= Seq(
+  evolutions,
+  jdbc,
+  "org.apache.kafka" % "kafka-clients" % "3.5.0"
+)
 
 
 

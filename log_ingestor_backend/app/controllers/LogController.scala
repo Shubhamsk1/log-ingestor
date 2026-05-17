@@ -4,7 +4,7 @@ import models.{LogInput , QueryType, SearchParam}
 import org.joda.time.DateTime
 import play.api.mvc.{BaseController, ControllerComponents}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json, OFormat}
-import services.LogService
+import services.{LogIngestionService, LogService}
 import scalikejdbc.{DB, DBSession, SQL}
 
 import javax.inject.Inject
@@ -14,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 
 
-class LogController @Inject()(val controllerComponents: ControllerComponents,logService: LogService) extends BaseController{
+class LogController @Inject()(val controllerComponents: ControllerComponents, logService: LogService, ingestionService: LogIngestionService) extends BaseController{
 
   private implicit val ec: ExecutionContext = controllerComponents.executionContext
 
@@ -24,13 +24,13 @@ class LogController @Inject()(val controllerComponents: ControllerComponents,log
       case JsError(errors) =>Future.successful(BadRequest(Json.obj("error" -> s"Invalid Log Entry case class:: ${errors.toString()}")))
 
       case JsSuccess(value, _) =>
-       logService.insertLogs(logEntries = value).map{res =>
-          Ok(Json.obj("success"->"Log ingested successfully")).withHeaders(
+       ingestionService.ingest(logs = value).map { _ =>
+          Accepted(Json.obj("status" -> "accepted", "message" -> "Logs queued for ingestion")).withHeaders(
             "Access-Control-Allow-Origin" -> "http://localhost:3001"
           )
-        }.recover{ case e =>
-          BadRequest(Json.obj("error" -> e.getMessage))
-       }
+        }.recover { case e =>
+          InternalServerError(Json.obj("error" -> s"Failed to queue logs: ${e.getMessage}"))
+        }
     }
   }
 

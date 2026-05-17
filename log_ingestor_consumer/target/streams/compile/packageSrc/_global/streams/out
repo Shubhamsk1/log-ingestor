@@ -1,0 +1,5 @@
+[debug] Packaging /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/log_ingestor_consumer_2.13-1.0-sources.jar ...
+[debug] Input file mappings:
+[debug] 	LogConsumer.scala
+[debug] 	  /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/src/main/scala/LogConsumer.scala
+[debug] Done packaging.

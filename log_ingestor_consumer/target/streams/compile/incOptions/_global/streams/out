@@ -1,0 +1,14 @@
+[debug] Created transactional ClassFileManager with tempDir = /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes.bak
+[debug] About to delete class files:
+[debug] We backup class files:
+[debug] Created transactional ClassFileManager with tempDir = /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes.bak
+[debug] About to delete class files:
+[debug] We backup class files:
+[debug] Registering generated classes:
+[debug] 	LogConsumer$$anon$1.class
+[debug] 	LogConsumer$.class
+[debug] 	LogInput.class
+[debug] 	LogConsumer.class
+[debug] 	LogConsumer$delayedInit$body.class
+[debug] 	LogInput$.class
+[debug] Removing the temporary directory used for backing up class files: /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes.bak

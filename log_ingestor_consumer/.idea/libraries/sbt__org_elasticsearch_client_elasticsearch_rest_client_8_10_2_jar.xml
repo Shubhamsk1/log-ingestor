@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="sbt: org.elasticsearch.client:elasticsearch-rest-client:8.10.2:jar" type="java-imported" external-system-id="SBT">
+    <properties groupId="org.elasticsearch.client" artifactId="elasticsearch-rest-client" version="8.10.2" baseVersion="8.10.2" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/elasticsearch/client/elasticsearch-rest-client/8.10.2/elasticsearch-rest-client-8.10.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/elasticsearch/client/elasticsearch-rest-client/8.10.2/elasticsearch-rest-client-8.10.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -2,22 +2,38 @@
 
 ## Overview
 
-A full-stack log ingestion and search system. Users can ingest JSON log entries via a REST API and search/filter them through a web UI. The system uses a **React + TypeScript frontend** that talks to a **Play Framework (Scala) backend** backed by **PostgreSQL**.
+A full-stack log ingestion and search system. Users can ingest JSON log entries via a REST API and search/filter them through a web UI. The system uses a **React + TypeScript frontend** that talks to a **Play Framework (Scala) backend**. Incoming logs are buffered through **Apache Kafka** for durability and back-pressure, then consumed asynchronously and written to **PostgreSQL** and optionally **Elasticsearch**.
 
 ```
-┌──────────────────────┐       HTTP (REST)       ┌────────────────────────┐
-│   Frontend (React)   │ ◄──────────────────────► │  Backend (Play/Scala) │
-│   Port 3001          │    POST /api/filter      │  Port 3000            │
-│                      │    POST /                │                       │
-└──────────────────────┘                          └───────────┬────────────┘
-                                                              │
-                                                              │ ScalikeJDBC
-                                                              ▼
-                                                     ┌────────────────┐
-                                                     │  PostgreSQL    │
-                                                     │  logs_ingestor_│
-                                                     │  db            │
-                                                     └────────────────┘
+┌──────────────────────┐     HTTP (REST)      ┌────────────────────────────┐
+│   Frontend (React)   │ ◄──────────────────► │  Backend (Play/Scala)     │
+│   Port 3001          │   POST /api/filter   │  Port 3000                │
+│   (nginx reverse     │   POST /             │                           │
+│    proxy)            │                      │                           │
+└──────────────────────┘                      └───────────┬────────────────┘
+                                                          │
+                                                          │ Kafka Producer
+                                                          ▼
+                                                  ┌────────────────┐
+                                                  │   Kafka        │
+                                                  │   logs-raw     │
+                                                  │   topic        │
+                                                  └────────┬───────┘
+                                                           │
+                                                           │ Consumer Group
+                                                           ▼
+                                                  ┌────────────────────┐
+                                                  │ Consumer (Scala)   │
+                                                  │ - Parse           │
+                                                  │ - Batch write     │
+                                                  │ - DLQ on failure  │
+                                                  └──┬─────────────┬──┘
+                                                     │             │
+                                                     ▼             ▼
+                                              ┌──────────┐  ┌──────────────┐
+                                              │PostgreSQL│  │Elasticsearch │
+                                              │(primary) │  │(optional)    │
+                                              └──────────┘  └──────────────┘
 ```
 
 ---
@@ -187,10 +203,23 @@ CREATE TABLE logs (
 
 **Indexes** (Evolution 2): Individual indexes on `level`, `message`, `resource_id`, `timestamp`, `trace_id`, `span_id`, `commit`, plus a composite index on `(level, timestamp)`.
 
+### Message Queue Publisher
+
+**`MessageQueuePublisher` trait** — abstraction over message queue publication:
+- `publish(logs: Seq[LogInput]): Future[Unit]`
+- `close(): Unit`
+
+**`KafkaMessageQueuePublisher`** — Kafka implementation using async send with callback (no blocking `.get()`):
+- Configurable bootstrap servers, topic, acks, retries, linger.ms, request.timeout.ms
+- Graceful shutdown via Play's `ApplicationLifecycle` hook
+- SLF4J logging
+
+**`LogIngestionService`** — orchestrates ingestion through the publisher trait.
+
 ### Dependency Injection
 
 - **`AppApplicationLoader`** — Custom `GuiceApplicationLoader` that calls `DBs.setupAll()` on startup.
-- **`LogModule`** — Guice module that binds `LogController`, `LogService`, and `LogDao` as eager singletons.
+- **`LogModule`** — Guice module that binds `MessageQueuePublisher → KafkaMessageQueuePublisher`, `LogIngestionService`, `LogService`, `LogDao`, and `LogController` as eager singletons.
 
 ### Configuration (`application.conf`)
 
@@ -201,6 +230,10 @@ CREATE TABLE logs (
 | CORS Origins           | `http://localhost:3001`                    |
 | CORS Methods           | GET, POST, PUT, DELETE, OPTIONS           |
 | CORS Headers           | Content-Type, Authorization               |
+| Kafka Bootstrap        | `localhost:9092`                          |
+| Kafka Topic            | `logs-raw`                                |
+| Producer Acks          | `1`                                       |
+| Producer Retries       | `3`                                       |
 
 ---
 
@@ -268,6 +301,122 @@ npm install
 npm start      # Starts on http://localhost:3001
 ```
 
+---
+
+## Consumer (`log_ingestor_consumer/`)
+
+### Stack
+| Layer             | Technology                           |
+|------------------|--------------------------------------|
+| Language         | Scala 2.13                           |
+| Build Tool       | sbt (JavaAppPackaging)               |
+| Kafka Client     | kafka-clients 3.5.0                  |
+| Database Access  | ScalikeJDBC 3.5.0 (PostgreSQL)       |
+| Search Engine    | elasticsearch-rest-client 8.10.2     |
+| JSON             | play-json 2.10.0                     |
+| Logging          | SLF4J + Logback 1.4                  |
+
+### Architecture
+
+```
+Kafka (logs-raw)
+    │
+    ▼
+LogConsumer (main loop)
+    │
+    ├── LogParser        JSON → Seq[LogEntry]
+    │
+    ├── LogStorageWriter (trait)
+    │   ├── PostgresBatchWriter   JDBC batch insert
+    │   └── ElasticsearchBatchWriter  ES Bulk API
+    │
+    └── DeadLetterQueue  Failed records → Kafka topic (logs-raw-dlq)
+```
+
+### Components
+
+**`LogParser`** — Parses JSON arrays into `Seq[LogEntry]`. Handles both `camelCase` and `snake_case` field variants. Logs warnings for entries with missing required fields.
+
+**`LogStorageWriter` trait** — Storage abstraction:
+- `write(entries: Seq[LogEntry]): Either[String, Int]`
+- `close(): Unit`
+
+**`PostgresBatchWriter`** — JDBC batch insert via ScalikeJDBC's `SQL.batch()`. Uses `DB.localTx` for transactional safety. Configurable via env vars.
+
+**`ElasticsearchBatchWriter`** — Uses Elasticsearch Bulk API (`/_bulk`). Auto-creates index with mapping on startup if it doesn't exist.
+
+**`StorageWriterFactory`** — Creates writer(s) based on `STORAGE_WRITER` env var:
+- `postgres` (default) — PostgresBatchWriter only
+- `elasticsearch` / `es` — ElasticsearchBatchWriter only
+- `both` / `all` — Both writers (dual-write)
+
+In dual-write mode, a record goes to the DLQ only if **all** writers fail.
+
+**`DeadLetterQueue`** — Publishes failed entries (with reason) to a separate `logs-raw-dlq` Kafka topic for later reprocessing.
+
+### Environment Variables
+
+| Variable              | Default                  | Description                     |
+|-----------------------|--------------------------|---------------------------------|
+| `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092`      | Kafka brokers                   |
+| `DB_URL`              | `jdbc:postgresql://...`  | PostgreSQL JDBC URL             |
+| `DB_USERNAME`         | `shubhamkudekar`         | DB user                         |
+| `DB_PASSWORD`         | `""`                     | DB password                     |
+| `BATCH_SIZE`          | `100`                    | Max records per poll            |
+| `POLL_TIMEOUT_MS`     | `1000`                   | Kafka poll timeout              |
+| `STORAGE_WRITER`      | `postgres`               | Writer mode (postgres/es/both)  |
+| `ES_HOST`             | `localhost`              | Elasticsearch host              |
+| `ES_PORT`             | `9200`                   | Elasticsearch port              |
+| `ES_SCHEME`           | `http`                   | Elasticsearch scheme            |
+| `ES_INDEX`            | `logs`                   | Elasticsearch index name        |
+
+### Elasticsearch Index Mapping
+
+```json
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "level":           { "type": "keyword" },
+      "message":         { "type": "text" },
+      "resourceId":      { "type": "keyword" },
+      "timestamp":       { "type": "date" },
+      "traceId":         { "type": "keyword" },
+      "spanId":          { "type": "keyword" },
+      "commit":          { "type": "keyword" },
+      "parentResourceId":{ "type": "keyword" }
+    }
+  }
+}
+```
+
+---
+
+## Production Deployment (Docker)
+
+### Services
+
+| Service       | Image / Build                  | Port(s)        |
+|---------------|--------------------------------|----------------|
+| zookeeper     | confluentinc/cp-zookeeper:7.5  | 2181           |
+| kafka         | confluentinc/cp-kafka:7.5      | 9092           |
+| postgres      | postgres:16-alpine             | 5432           |
+| elasticsearch | elasticsearch:8.10.2           | 9200, 9300     |
+| backend       | `./log_ingestor_backend`       | 3000           |
+| frontend      | `./log_ingestor_frontend`      | 3001 → 80     |
+| consumer      | `./log_ingestor_consumer`      | —              |
+
+### Data Flow
+
+```
+POST / (ingest) → Backend → Kafka (logs-raw) → Consumer → PostgreSQL + Elasticsearch
+POST /api/filter (search) → Backend → PostgreSQL (or ES in future)
+```
+
 ### Design Decisions
 
 - **Batch ingestion (size 100)**: Optimizes throughput for bulk log inserts while keeping transactions manageable.
@@ -275,3 +424,10 @@ npm start      # Starts on http://localhost:3001
 - **Indexes on all searchable columns**: Ensures reasonable query performance as the log table grows.
 - **CORS locked to port 3001**: Prevents other origins from calling the API in development.
 - **Separate frontend/backend ports**: Clean separation; could be deployed independently or behind a reverse proxy.
+- **Kafka buffer**: Decouples ingestion throughput from database write capacity. Backend returns 202 Accepted immediately after publishing to Kafka; consumer handles writes asynchronously.
+- **MessageQueuePublisher trait**: Allows swapping Kafka for other message queues (Redis Pub/Sub, SQS, etc.) without changing controllers or services.
+- **LogStorageWriter trait**: Allows adding or swapping storage backends (PostgreSQL → Elasticsearch → both) without changing the consumer main loop.
+- **Dead Letter Queue**: Failed records are persisted to a DLQ Kafka topic for reprocessing, preventing data loss during transient failures.
+- **Dual-write mode**: Consumer can write to both PostgreSQL and Elasticsearch simultaneously for gradual migration or redundancy.
+- **Auto-created ES index**: Index with strict mapping is created on consumer startup if missing, keeping deployment simple.
+- **Pre-built stage for Docker**: Avoids sbt/Maven Central rate limiting in Docker builds; host runs `sbt stage`, Docker copies artifacts only.

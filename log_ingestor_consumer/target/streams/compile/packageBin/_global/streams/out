@@ -1,0 +1,15 @@
+[debug] Packaging /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/log_ingestor_consumer_2.13-1.0.jar ...
+[debug] Input file mappings:
+[debug] 	LogInput.class
+[debug] 	  /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes/LogInput.class
+[debug] 	LogInput$.class
+[debug] 	  /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes/LogInput$.class
+[debug] 	LogConsumer.class
+[debug] 	  /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes/LogConsumer.class
+[debug] 	LogConsumer$$anon$1.class
+[debug] 	  /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes/LogConsumer$$anon$1.class
+[debug] 	LogConsumer$delayedInit$body.class
+[debug] 	  /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes/LogConsumer$delayedInit$body.class
+[debug] 	LogConsumer$.class
+[debug] 	  /Users/shubhamkudekar/Documents/Learning/persornal-projects/log-ingestor/log_ingestor_consumer/target/scala-2.13/classes/LogConsumer$.class
+[debug] Done packaging.

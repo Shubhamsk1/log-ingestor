@@ -1,4 +1,32 @@
 services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -23,11 +51,49 @@ services:
       DB_URL: "jdbc:postgresql://postgres:5432/logs_ingestor_db"
       DB_USERNAME: "shubhamkudekar"
       DB_PASSWORD: "devpassword"
-      DB_DRIVER: "org.postgresql.Driver"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
       CORS_ORIGINS: '["http://localhost:3001", "http://localhost"]'
       JAVA_OPTS: "-Ddb.default.url=jdbc:postgresql://postgres:5432/logs_ingestor_db -Ddb.default.username=shubhamkudekar -Ddb.default.password=devpassword -Dplay.evolutions.autoApply=true -Dplay.http.secret.key=dev_secret_change_in_production_0123456789abcdef0123456789abcdef"
     depends_on:
       postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+  elasticsearch:
+    image: elasticsearch:8.10.2
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"' || curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"yellow\"'"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+
+  consumer:
+    build: ./log_ingestor_consumer
+    environment:
+      DB_URL: "jdbc:postgresql://postgres:5432/logs_ingestor_db"
+      DB_USERNAME: "shubhamkudekar"
+      DB_PASSWORD: "devpassword"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+      STORAGE_WRITER: "both"
+      ES_HOST: "elasticsearch"
+      ES_PORT: "9200"
+      ES_INDEX: "logs"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      elasticsearch:
         condition: service_healthy
 
   frontend:
@@ -39,3 +105,4 @@ services:
 
 volumes:
   pgdata:
+  esdata:

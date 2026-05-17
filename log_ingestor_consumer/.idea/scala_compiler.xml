@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <option name="separateProdTestSources" value="true" />
+    <profile name="sbt 1" modules="log_ingestor_consumer,log_ingestor_consumer.main,log_ingestor_consumer.test,log_ingestor_consumer_6483,log_ingestor_consumer_6483.main,log_ingestor_consumer_6483.test" />
+  </component>
+</project>
